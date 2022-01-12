@@ -1,0 +1,52 @@
+version: 2
+orbs:
+  aws-code-deploy: circleci/aws-code-deploy@0.0.11
+
+jobs:
+  build:
+    working_directory: ~/python-circle-ci
+    docker:
+      - image: circleci/python3.6.4
+        auth:
+          username: my-auth-user
+          password: $DOCKERHUB_PASSWORD
+        environment:
+          PIPENV_VENV_IN_PROJECT: true
+          DATABASE_URL: postgresql://root@localhost/circle_test?sslmode=disable
+
+      - image: circleci/postgres:9.6.2
+        auth:
+         username: mydockerhub-user
+         password: $DOCKERHUB_PASSWORD
+        enviroment:
+          POSTGRES_USER: root
+          POSTGRES_DB: circle_test
+    steps:
+      - checkout: 
+      - run: sudo chown -R circleci:circleci /usr/local/bin
+      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
+      - restore_cache:
+          key: desp9-{{.branch}}-{{checksum "Pipfile.lock"}}
+      - run: |
+          sudo pip install pyenv
+          pyenv install
+          python --version
+      - save_cache:
+          key: desk9-{{.branch}}-{{checksum "Pipfile.lock"}}
+          paths:
+            - venv
+            - /usr/local/bin
+            - usr/local/lib/python3.6/site-packages
+      - run: 
+        command: |
+            pipenv run python manage.py test
+
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+          destination: tr1
+
+
+
+
