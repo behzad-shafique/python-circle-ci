@@ -30,6 +30,7 @@ jobs:
       - run: |
           sudo pip install pyenv
           pyenv install
+          python --version
       - save_cache:
           key: desk9-{{.branch}}-{{checksum "Pipfile.lock"}}
           paths:
